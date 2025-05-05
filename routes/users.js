@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db');
-const { encrypt, decrypt } = require('../utils/crypto');
+const { encrypt, decrypt } = require('../utils/encryption');
 
 // Register
 router.post('/register', async (req, res) => {
