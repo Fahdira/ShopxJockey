@@ -1,17 +1,24 @@
+// app.js
 const express = require('express');
 const path = require('path');
-const users = require('./routes/users');
-require('dotenv').config();
+const dotenv = require('dotenv');
+const bodyParser = require('body-parser');
+const userRoutes = require('./routes/users');
 
+dotenv.config();
 const app = express();
-app.use(express.json());
+
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
-app.get('/register', (_, res) => res.sendFile(path.join(__dirname, 'views/register.html')));
-app.get('/login', (_, res) => res.sendFile(path.join(__dirname, 'views/login.html')));
-app.get('/index', (_, res) => res.sendFile(path.join(__dirname, 'views/index.html')));
+// Serve static HTML files
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'views', 'index.html')));
+app.get('/register', (req, res) => res.sendFile(path.join(__dirname, 'views', 'register.html')));
+app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'views', 'login.html')));
+app.get('/dashboard', (req, res) => res.sendFile(path.join(__dirname, 'views', 'index.html')));
 
-app.use('/api', users);
+app.use('/api/users', userRoutes);
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

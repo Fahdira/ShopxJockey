@@ -1,30 +1,28 @@
 document.getElementById('registerForm').addEventListener('submit', async (e) => {
     e.preventDefault();
+    const form = e.target;
   
-    const data = {
-      username: document.getElementById('username').value.trim(),
-      password: document.getElementById('password').value,
-      creditCard: document.getElementById('creditCard').value,
-      cvv: document.getElementById('cvv').value,
+    const userData = {
+      username: form.username.value,
+      password: form.password.value,
+      credit_card: form.credit_card.value,
+      cvv: form.cvv.value
     };
   
     try {
-      const res = await fetch('/api/register', {
+      const res = await fetch('/api/users/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
+        body: JSON.stringify(userData)
       });
-  
-      const result = await res.json();
+      const data = await res.json();
+      alert(data.message);
       if (res.ok) {
-        alert('Registration successful!');
-        window.location.href = '/login';
-      } else {
-        alert(result.message || 'Registration failed.');
+        window.location.href = 'login.html';
       }
     } catch (err) {
-      console.error('Registration error:', err);
-      alert('An error occurred.');
+      alert("Registration failed!");
+      console.error(err);
     }
   });
   

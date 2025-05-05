@@ -1,26 +1,25 @@
 document.getElementById('loginForm').addEventListener('submit', async (e) => {
     e.preventDefault();
-    const data = {
-      username: document.getElementById('username').value.trim(),
-      password: document.getElementById('password').value
+    const form = e.target;
+  
+    const loginData = {
+      username: form.username.value,
+      password: form.password.value
     };
   
     try {
-      const res = await fetch('/api/login', {
+      const res = await fetch('/api/users/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
+        body: JSON.stringify(loginData)
       });
-  
-      const result = await res.json();
+      const data = await res.json();
+      alert(data.message);
       if (res.ok) {
-        alert('Login successful!');
-        window.location.href = '/index';
-      } else {
-        alert(result.message);
+        window.location.href = 'index.html';
       }
     } catch (err) {
-      alert('Login error!');
+      alert("Login failed!");
+      console.error(err);
     }
-  });
-  
+  });  
