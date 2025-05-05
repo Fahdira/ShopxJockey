@@ -1,58 +1,39 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../db'); // Your MySQL connection
-const { encrypt } = require('../utils/encryption');
-const { decrypt } = require('../utils/encryption');
+const db = require('../db');
+const { encrypt, decrypt } = require('../utils/crypto');
 
+// Register
 router.post('/register', async (req, res) => {
+  const { username, password, creditCard, cvv } = req.body;
   try {
-    const { name, email, password, creditCard, cvv } = req.body;
-
-    const encryptedName = encrypt(name);
-    const encryptedEmail = encrypt(email);
-    const encryptedPassword = encrypt(password);
-    const encryptedCard = encrypt(creditCard);
-    const encryptedCvv = encrypt(cvv);
-
-    const sql = 'INSERT INTO users (name, email, password, credit_card, cvv) VALUES (?, ?, ?, ?, ?)';
-    await db.execute(sql, [encryptedName, encryptedEmail, encryptedPassword, encryptedCard, encryptedCvv]);
-
-    res.json({ message: 'User registered securely.' });
+    await db.execute(
+      'INSERT INTO users (username, password, credit_card, cvv) VALUES (?, ?, ?, ?)',
+      [encrypt(username), encrypt(password), encrypt(creditCard), encrypt(cvv)]
+    );
+    res.status(200).json({ message: 'Registered successfully' });
   } catch (err) {
-    console.error('Register error:', err);
-    res.status(500).json({ error: 'Internal Server Error' });
+    res.status(500).json({ message: 'Registration failed', error: err.message });
+  }
+});
+
+// Login
+router.post('/login', async (req, res) => {
+  const { username, password } = req.body;
+  try {
+    const [rows] = await db.query('SELECT * FROM users');
+    const match = rows.find(user =>
+      decrypt(user.username) === username && decrypt(user.password) === password
+    );
+
+    if (match) {
+      res.status(200).json({ message: 'Login successful' });
+    } else {
+      res.status(401).json({ message: 'Invalid credentials' });
+    }
+  } catch (err) {
+    res.status(500).json({ message: 'Login failed', error: err.message });
   }
 });
 
 module.exports = router;
-
-router.post('/login', async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    // Fetch all users and compare decrypted email and password
-    const [rows] = await db.execute('SELECT * FROM users');
-    for (let user of rows) {
-      const dbEmail = decrypt(user.email);
-      const dbPassword = decrypt(user.password);
-
-      if (email === dbEmail && password === dbPassword) {
-        const decryptedName = decrypt(user.name);
-        res.json({
-          message: 'Login successful',
-          user: {
-            id: user.id,
-            name: decryptedName,
-            email: dbEmail
-          }
-        });
-        return;
-      }
-    }
-
-    res.status(401).json({ error: 'Invalid credentials' });
-  } catch (err) {
-    console.error('Login error:', err);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-});

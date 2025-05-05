@@ -1,35 +1,17 @@
-require('dotenv').config();
 const express = require('express');
+const path = require('path');
+const users = require('./routes/users');
+require('dotenv').config();
+
 const app = express();
-const mysql = require('mysql2');
-const userRoutes = require('./routes/users');
 app.use(express.json());
-app.use('/api', userRoutes);
+app.use(express.static(path.join(__dirname, 'public')));
 
-app.use(express.json());
+app.get('/register', (_, res) => res.sendFile(path.join(__dirname, 'views/register.html')));
+app.get('/login', (_, res) => res.sendFile(path.join(__dirname, 'views/login.html')));
+app.get('/index', (_, res) => res.sendFile(path.join(__dirname, 'views/index.html')));
 
-// MySQL connection
-const db = mysql.createConnection({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-});
+app.use('/api', users);
 
-db.connect((err) => {
-  if (err) {
-    console.error('DB Connection failed:', err);
-  } else {
-    console.log('Connected to MySQL DB');
-  }
-});
-
-// Simple route
-app.get('/', (req, res) => {
-  res.send('Secure E-Commerce Backend is running!');
-});
-
-// Start server
-app.listen(process.env.PORT, () => {
-  console.log(`Server running on http://localhost:${process.env.PORT}`);
-});
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
