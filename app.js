@@ -2,6 +2,9 @@ require('dotenv').config();
 const express = require('express');
 const app = express();
 const mysql = require('mysql2');
+const userRoutes = require('./routes/users');
+app.use(express.json());
+app.use('/api', userRoutes);
 
 app.use(express.json());
 
